@@ -1,0 +1,81 @@
+import re
+import pandas as pd
+import numpy as np
+import math
+import random
+
+
+def equal_interval_sampling(data, size):
+    total_size = len(data)
+    print(f"样本总量为{total_size}")
+    interval = math.floor(total_size / size)  # 向下取整，若向上取整使用math.ceil
+    print(f"组距为{interval}")
+    # 取随机数
+    random_number = random.randint(1, interval)  # 皆为闭区间
+    print(f"随机数为{random_number}")
+    indices = np.arange(random_number + 1, total_size, interval)   # 由于第一行是表头，所以要加1
+    extracted_data = data.iloc[indices]
+    return extracted_data
+
+
+# 读取原始Excel文件
+file_path = r"C:\Users\29791\Desktop\数据\Content_V3.0.xlsx"
+text_data = pd.read_excel(file_path)
+
+# 设置抽样大小
+sample_size = 337  # 输入https://www.calculator.net/sample-size-calculator.html计算结果
+
+# 进行等距抽样
+sampled_data = equal_interval_sampling(text_data, sample_size)
+
+# 将抽样结果存入新的Excel文件中，保留原始表头
+output_file_path = r"C:\Users\29791\Desktop\数据\Content_V4.0.xlsx"
+sampled_data.to_excel(output_file_path, index=False, header=True)
+
+print("等距抽样完成！")
+
+# 读取 Excel 文件
+file_data = pd.read_excel(output_file_path)
+
+# 获取第四列内容
+content_column = file_data['Content']
+
+# 合并内容
+merged_content = '\n'.join(content_column)
+
+# 将内容写入到 txt 文件中
+output_file_path = r"C:\Users\29791\Desktop\数据\merged_text_已抽样.txt"
+with open(output_file_path, 'w', encoding='utf-8') as file:
+    file.write(merged_content)
+
+print("内容已合并！")
+
+
+def split_sentences(text):
+    # 使用正则表达式匹配句子的结束标点符号
+    # 标点符号后紧跟空格或者文本结束符作为句子的结束
+    # 包括 .、!、?
+    sentences = re.split(r'(?<=[.!?])\s', text)
+    return sentences
+
+
+def main():
+    input_file = r"C:\Users\29791\Desktop\数据\merged_text_已抽样.txt"  # 输入文件名
+    output_file = r"C:\Users\29791\Desktop\数据\merged_text_split_已抽样.txt"  # 输出文件名
+
+    # 读取输入文件中的文本
+    with open(input_file, 'r', encoding='utf-8') as f:
+        text = f.read()
+
+    # 将文本按句子划分
+    sentences = split_sentences(text)
+
+    # 将划分的句子写入输出文件中
+    with open(output_file, 'w', encoding='utf-8') as f:
+        for sentence in sentences:
+            f.write(sentence + '\n')
+
+
+if __name__ == '__main__':
+    main()
+    print("已按句子划分语料！")
